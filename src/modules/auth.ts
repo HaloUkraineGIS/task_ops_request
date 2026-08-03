@@ -24,7 +24,18 @@ IdentityManager.registerOAuthInfos([info]);
  * signed in.
  */
 export async function ensureSignedIn(): Promise<CurrentUser> {
-  await IdentityManager.checkSignInStatus(`${config.portalUrl}/sharing`);
+  const sharingUrl = `${config.portalUrl}/sharing`;
+
+  try {
+    await IdentityManager.checkSignInStatus(sharingUrl);
+  } catch {
+    // Not signed in yet (rejects with "identity-manager:not-authenticated").
+    // This is the expected first-visit case, not an error — kick off the
+    // OAuth flow. With popup:false this performs a full-page redirect to
+    // the portal's login page, so nothing after this call runs until the
+    // browser navigates back with the auth code and this module re-runs.
+    await IdentityManager.getCredential(sharingUrl);
+  }
 
   const portal = new Portal({ url: config.portalUrl, authMode: "immediate" });
   await portal.load();

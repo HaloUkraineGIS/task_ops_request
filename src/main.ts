@@ -1,5 +1,5 @@
 import "@esri/calcite-components/dist/calcite/calcite.css";
-import { setAssetPath } from "@esri/calcite-components/dist/components";
+import "./modules/calcite-setup";
 import "@esri/calcite-components/dist/components/calcite-button";
 import "@esri/calcite-components/dist/components/calcite-select";
 import "@esri/calcite-components/dist/components/calcite-option";
@@ -20,8 +20,6 @@ import { initPanel, getRows, getSelectedUnit, type DraftRow } from "./modules/pa
 import { initModal, openModal } from "./modules/modal";
 import { refreshTable } from "./modules/table";
 import { makeResizable } from "./modules/resizable";
-
-setAssetPath(`${import.meta.env.BASE_URL}assets`);
 
 const bootOverlay = document.getElementById("boot-overlay")!;
 const bootStatus = document.getElementById("boot-status")!;
