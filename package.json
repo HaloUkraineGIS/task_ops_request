@@ -1,0 +1,22 @@
+{
+  "name": "taskops-request",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "cross-env NODE_OPTIONS=--max-old-space-size=4096 vite build",
+    "preview": "vite preview",
+    "postinstall": "node scripts/copy-calcite-assets.mjs",
+    "prebuild": "node scripts/copy-calcite-assets.mjs"
+  },
+  "dependencies": {
+    "@arcgis/core": "4.30.9",
+    "@esri/calcite-components": "2.13.2"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.2"
+  }
+}

@@ -1,0 +1,335 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+
+:root {
+  --bg-base: #0b1113;
+  --bg-panel: #121a1d;
+  --bg-elevated: #1a2327;
+  --accent: #2f9bab;
+  --accent-bright: #3fb6c7;
+  --accent-amber: #cf8a45;
+  --success: #4caf7d;
+  --danger: #d1574f;
+  --text-primary: #e8eef0;
+  --text-muted: #8ba0a6;
+  --border: #223034;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 14px;
+}
+
+.mono {
+  font-family: "JetBrains Mono", monospace;
+}
+
+/* ---------- Boot overlay ---------- */
+.boot-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-base);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 1000;
+}
+.boot-overlay__brand {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--accent-bright);
+  letter-spacing: 2px;
+}
+.boot-overlay__status {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ---------- App shell ---------- */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  height: 57px;
+  flex: 0 0 57px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  gap: 12px;
+}
+.app-header__brand {
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 700;
+  color: var(--accent-bright);
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+.app-header__title {
+  font-weight: 600;
+  font-size: 15px;
+}
+.app-header__subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.app-header__user {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.app-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.app-main {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ---------- Side panel ---------- */
+.side-panel {
+  width: 40%;
+  min-width: 420px;
+  flex-shrink: 0;
+  background: var(--bg-panel);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 16px;
+  gap: 14px;
+  overflow: hidden;
+}
+.side-panel__unit calcite-select {
+  width: 100%;
+}
+.side-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+.side-panel__rows {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.side-panel__submit {
+  flex: 0 0 auto;
+}
+
+.empty-hint {
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 24px 8px;
+  text-align: center;
+}
+
+/* ---------- Task row ---------- */
+.row-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.task-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: start;
+  gap: 10px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px;
+}
+.task-row__hint {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  min-height: 14px;
+}
+.task-row__flags {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+.task-row__flag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.task-row__flag--casevac {
+  color: var(--accent-amber);
+  font-weight: 600;
+}
+
+/* ---------- Resizers ---------- */
+.resizer {
+  background: var(--border);
+  flex-shrink: 0;
+}
+.resizer--vertical {
+  width: 7px;
+  cursor: col-resize;
+}
+.resizer--horizontal {
+  height: 7px;
+  cursor: row-resize;
+}
+.resizer.is-disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+/* ---------- Map ---------- */
+.map-panel {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+}
+
+/* ---------- Bottom panel ---------- */
+.bottom-panel {
+  height: 300px;
+  min-height: 140px;
+  max-height: 75vh;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.bottom-panel.is-collapsed {
+  height: auto !important;
+  min-height: 0;
+}
+.bottom-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.bottom-panel__body {
+  flex: 1;
+  overflow: auto;
+  padding: 0 16px 16px;
+}
+
+.table-loading,
+.table-error,
+.table-empty {
+  color: var(--text-muted);
+  padding: 16px 0;
+  font-size: 13px;
+}
+
+.submitted-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.submitted-table th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-panel);
+  text-align: left;
+  padding: 8px;
+  color: var(--text-muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+.submitted-table td {
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+  font-family: "JetBrains Mono", monospace;
+}
+.submitted-table td.cell--casevac {
+  color: var(--accent-amber);
+  font-weight: 600;
+}
+
+/* ---------- Confirm modal ---------- */
+.confirm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.confirm-row {
+  display: grid;
+  grid-template-columns: 100px 1fr 100px 1fr;
+  gap: 8px;
+  font-size: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.confirm-row__code {
+  font-family: "JetBrains Mono", monospace;
+  color: var(--accent-bright);
+}
+
+.result {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.result--success {
+  background: rgba(76, 175, 125, 0.15);
+  color: var(--success);
+}
+.result--error {
+  background: rgba(209, 87, 79, 0.15);
+  color: var(--danger);
+}
+.result--partial {
+  background: rgba(207, 138, 69, 0.15);
+  color: var(--accent-amber);
+}
+
+/* Draft markers use teal; success markers switch to green via map.ts symbol colors. */

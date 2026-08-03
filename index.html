@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en" class="calcite-mode-dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TaskOps Request</title>
+  </head>
+  <body>
+    <div id="app">
+      <!-- Full-screen boot overlay: single sequential status text, no
+           separate header spinner. -->
+      <div id="boot-overlay" class="boot-overlay">
+        <div class="boot-overlay__brand">TO</div>
+        <div class="boot-overlay__status" id="boot-status">Initializing…</div>
+        <calcite-button
+          id="boot-reload"
+          appearance="outline"
+          style="display:none"
+          >Reload</calcite-button
+        >
+      </div>
+
+      <div class="app-shell" id="app-shell" style="display:none">
+        <header class="app-header">
+          <div class="app-header__brand">TO</div>
+          <div class="app-header__titles">
+            <div class="app-header__title">TaskOps Request</div>
+            <div class="app-header__subtitle">
+              HALO Ukraine GIS — bulk task creation
+            </div>
+          </div>
+          <div class="app-header__user">
+            <span id="user-name"></span>
+            <calcite-button id="sign-out-btn" appearance="transparent" scale="s"
+              >Sign out</calcite-button
+            >
+          </div>
+        </header>
+
+        <div class="app-body">
+          <div class="app-main">
+            <div class="side-panel" id="side-panel">
+              <div class="side-panel__unit">
+                <calcite-select id="unit-select" label="Unit (region)" required>
+                </calcite-select>
+              </div>
+
+              <div class="side-panel__header">
+                <span>New requests</span>
+                <calcite-button id="add-task-btn" icon-start="plus" scale="s"
+                  >Add task</calcite-button
+                >
+              </div>
+
+              <div class="side-panel__rows" id="row-list-container">
+                <div class="row-list" id="row-list"></div>
+                <div class="empty-hint" id="empty-hint">
+                  Select a unit, then add a task to begin.
+                </div>
+              </div>
+
+              <div class="side-panel__submit">
+                <calcite-button id="submit-btn" width="full" disabled
+                  >Submit (0)</calcite-button
+                >
+              </div>
+            </div>
+
+            <div class="resizer resizer--vertical" id="resizer-vertical"></div>
+
+            <div class="map-panel" id="map-panel"></div>
+          </div>
+
+          <div class="resizer resizer--horizontal" id="resizer-horizontal"></div>
+
+          <div class="bottom-panel" id="bottom-panel">
+            <div class="bottom-panel__header" id="bottom-panel-header">
+              <span>Submitted requests</span>
+              <calcite-action
+                id="bottom-panel-collapse"
+                icon="chevron-down"
+                scale="s"
+                text="Collapse"
+              ></calcite-action>
+            </div>
+            <div class="bottom-panel__body" id="bottom-panel-body"></div>
+          </div>
+        </div>
+      </div>
+
+      <calcite-modal id="confirm-modal" aria-labelledby="confirm-modal-title">
+        <div slot="header" id="confirm-modal-title">Confirm submission</div>
+        <div slot="content">
+          <div class="confirm-list" id="confirm-list"></div>
+          <div id="confirm-result"></div>
+        </div>
+        <calcite-button
+          slot="secondary"
+          id="confirm-cancel-btn"
+          appearance="outline"
+          >Cancel</calcite-button
+        >
+        <calcite-button slot="primary" id="confirm-submit-btn"
+          >Confirm & submit</calcite-button
+        >
+      </calcite-modal>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
