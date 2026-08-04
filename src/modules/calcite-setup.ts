@@ -14,4 +14,19 @@
 // even evaluated.
 import { setAssetPath } from "@esri/calcite-components/dist/components";
 
-setAssetPath(`${import.meta.env.BASE_URL}assets`);
+// IMPORTANT — two easy mistakes to avoid here:
+//
+// 1. Stencil's setAssetPath does NOT resolve its argument to an absolute
+//    URL; it stores the raw string as-is (`plt.$resourcesUrl$ = path`).
+//    Every later `getAssetPath(x)` call then does
+//    `new URL(x, plt.$resourcesUrl$)` — and the WHATWG URL constructor
+//    requires the *base* argument to already be a full absolute URL
+//    (scheme + host). A root-relative path like "/task_ops_request/assets"
+//    is NOT a valid base and throws "Failed to construct 'URL': Invalid
+//    base URL". So this must be built into a real absolute URL ourselves.
+//
+// 2. The value must point at the site ROOT, not at ".../assets". Calcite's
+//    internal calls already look like `getAssetPath("./assets/modal/...")`
+//    — they append "assets/" themselves. Passing a path that already ends
+//    in "/assets" produces "/assets/assets/..." (double segment, 404s).
+setAssetPath(new URL(import.meta.env.BASE_URL, window.location.origin).href);
