@@ -1,3 +1,4 @@
+import "./modules/arcgis-config";
 import "@esri/calcite-components/dist/calcite/calcite.css";
 import "./modules/calcite-setup";
 import "@esri/calcite-components/dist/components/calcite-button";
