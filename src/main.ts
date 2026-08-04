@@ -60,7 +60,7 @@ async function boot() {
     await refreshTable(document.getElementById("bottom-panel-body")!);
 
     bootOverlay.style.display = "none";
-    appShell.style.display = "flex";
+    appShell.classList.remove("app-shell--booting");
   } catch (err) {
     console.error(err);
     showBootError(

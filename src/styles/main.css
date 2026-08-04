@@ -66,6 +66,14 @@ body {
   flex-direction: column;
   height: 100%;
 }
+/* Hidden-but-laid-out during boot: MapView needs a container with real,
+   non-zero dimensions to size its canvas — display:none would give it
+   0x0 and view.when() would hang forever with no console/network error
+   at all. visibility:hidden keeps layout intact while the boot overlay
+   (position:fixed, covers the full viewport) hides it visually. */
+.app-shell--booting {
+  visibility: hidden;
+}
 
 .app-header {
   display: flex;

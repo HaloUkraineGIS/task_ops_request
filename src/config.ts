@@ -4,10 +4,10 @@
 export const config = {
   portalUrl: "https://gis.htgoims.org/portal",
 
-  // Create a fresh, dedicated OAuth 2.0 Application in Portal for this
-  // repo (Authorization Code + PKCE, public client, no secret). Register
-  // both the production Pages URL and http://localhost:5173/ as Redirect
-  // URIs. Paste the resulting Client ID below.
+  // Registered ArcGIS Enterprise OAuth 2.0 Application (Authorization
+  // Code + PKCE, public client). Redirect URIs registered on this
+  // client must include both the GitHub Pages URL and
+  // http://localhost:5173/ for local dev.
   oauthAppId: "I2nM1oIsuu2NcMi9",
 
   webMapId: "14392a78de604a73a2557a378afc2927",
