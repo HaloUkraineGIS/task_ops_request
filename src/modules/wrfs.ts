@@ -4,40 +4,53 @@ import esriRequest from "@arcgis/core/request";
 import { config, serverManagedFields } from "../config";
 import type { DraftRow } from "./panel";
 
-// --- created_user/created_date appearing "stuck" on repeated submissions --
-// Symptom previously reported: after the first submission in a session,
-// later submissions (minutes apart) show the SAME created_user/created_date
-// as the first one — even after signing out and back in — until roughly an
-// hour passes and the page is fully reloaded, after which it's correct
-// again.
+// --- CONFIRMED server-side issue: created_user/created_date "stuck" -------
+// Symptom: after the first submission in a session, later submissions
+// (minutes apart) get recorded with the SAME created_user/created_date as
+// the first one, until roughly an hour passes OR the service is restarted.
 //
-// Diagnosed cause: queryRecentSubmissions() (used to populate the bottom
-// "Submitted requests" table) re-issues a query with byte-identical
-// where/outFields/orderBy/num parameters every time it runs. ArcGIS
-// Enterprise OAuth access tokens are commonly valid for ~1 hour, and a
-// "silent" re-login via an already-active portal SSO session can hand back
-// that same still-valid token rather than minting a new one. With the token
-// unchanged, the full request URL is then byte-identical across repeated
-// calls too, and the browser (or an intermediate proxy/CDN) can legally
-// serve a cached response for that exact URL instead of hitting the
-// network — reproducing exactly this symptom, and explaining why it
-// resolves once the token finally rotates (~1 hour) and a reload forces a
-// fresh request. This does NOT necessarily mean the underlying database
-// values were ever wrong — only what this app displayed.
+// Ruled out: browser/proxy HTTP caching of the read used to populate the
+// bottom table. queryRecentSubmissions() below now bypasses caching with
+// `cacheBust: true` plus a changing `_ts` param, confirmed via server logs
+// to hit the network every time — yet the wrong values are still present
+// when checked directly in ArcGIS Pro, completely independent of this app
+// or any browser. So this is not a client-side or read-side problem.
 //
-// Fix in place: queryRecentSubmissions() below bypasses layer.queryFeatures
-// in favor of a direct esriRequest call with `cacheBust: true` plus an
-// explicit changing `_ts` parameter, which defeats caching at every layer
-// (browser HTTP cache, corporate proxy, or ArcGIS Server response caching)
-// regardless of which one was responsible.
+// Confirmed instead: restarting the ukr_task_ops_request service
+// immediately resets the "stuck" created_user/created_date — the next
+// submission after a restart is correct — and the symptom reliably
+// reappears on later submissions the longer the service keeps running.
+// This is a strong signal of state cached inside a long-lived SERVICE
+// PROCESS rather than the database or any client: most likely a
+// shared-instance pooling configuration where a single persistent worker
+// holds one GDB/SDE connection whose cached "current user" context isn't
+// re-evaluated per request for Editor Tracking, so it keeps stamping
+// whichever user's edit first established that connection — until the
+// process recycles (manually via restart, or automatically after ~1 hour
+// of uptime, matching the observed periodicity).
 //
-// If created_user/created_date are still ever wrong when checked directly
-// against the raw REST endpoint (not through this app's UI) — e.g. by
-// opening `<wrfsUrl>/query?where=1=1&outFields=*&f=json&token=<TOKEN>` in a
-// plain browser tab right after a submission — that would point to a real
-// server/federation-level Editor Tracking issue rather than this app, since
-// this client never sends created_user/created_date/last_edited_* fields
-// (see serverManagedFields below, always stripped before applyEdits).
+// This client never sends created_user/created_date/last_edited_* (see
+// serverManagedFields below, always stripped before applyEdits) — the
+// wrong values are assigned entirely on the server, so this cannot be
+// fixed from this file. For the ArcGIS Enterprise administrator, on the
+// ukr_task_ops_request feature service:
+//   1. Service Properties → Pooling: if "Minimum number of instances" and
+//      "Maximum number of instances" are both 1 (a single shared
+//      instance), that single worker's connection/identity context can
+//      bleed into later edits until it recycles. This is the primary
+//      suspect given the restart test above. Try raising min/max
+//      instances as a diagnostic, and check the recycling schedule
+//      (usage-based / max uptime) for a ~60 minute interval.
+//   2. Re-verify Editor Tracking field bindings on the registered
+//      geodatabase dataset itself (not just the service/item) — pooled
+//      SDE connections cache schema/session state.
+//   3. The service also pushes to a message queue on every edit
+//      ("Send message to queue: ...FeaturesCreated..." in server logs) —
+//      confirm nothing downstream of that queue re-writes created_date/
+//      created_user asynchronously.
+// If none of this resolves it, open an Esri Support case with the server
+// logs (object id / globalId / timestamp of a reproduction) and the
+// restart-fixes-it finding — this is a strong, specific lead for them.
 // -----------------------------------------------------------------------------
 
 let layer: FeatureLayer | null = null;
