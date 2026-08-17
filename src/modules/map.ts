@@ -6,9 +6,11 @@ import LayerList from "@arcgis/core/widgets/LayerList";
 import Expand from "@arcgis/core/widgets/Expand";
 import Polygon from "@arcgis/core/geometry/Polygon";
 import { config } from "../config";
+import { getWrfsLayer } from "./wrfs";
 
 let view: MapView;
 let draftLayer: GraphicsLayer;
+let submittedSelectionLayer: GraphicsLayer;
 const markersByRowId = new Map<string, Graphic>();
 
 const TEAL = [63, 182, 199, 1];
@@ -18,7 +20,9 @@ export async function initMap(container: HTMLDivElement): Promise<MapView> {
   const webmap = new WebMap({ portalItem: { id: config.webMapId } });
 
   draftLayer = new GraphicsLayer({ title: "Draft task markers" });
+  submittedSelectionLayer = new GraphicsLayer({ title: "Selected submitted feature" });
   webmap.add(draftLayer);
+  webmap.add(submittedSelectionLayer);
 
   view = new MapView({
     container,
@@ -94,6 +98,40 @@ export function clearAllMarkers() {
 
 export function zoomToZone(geometry: Polygon) {
   view.goTo(geometry, { duration: 800, easing: "ease-in-out" });
+}
+
+export async function zoomToSubmittedFeature(objectId: number | string): Promise<void> {
+  if (objectId == null) return;
+
+  const layer = await getWrfsLayer();
+  const response = await layer.queryFeatures({
+    objectIds: [Number(objectId)],
+    outFields: ["*"],
+    returnGeometry: true,
+    outSpatialReference: { wkid: 4326 },
+  });
+
+  const feature = response.features[0];
+  if (!feature || !feature.geometry) return;
+
+  submittedSelectionLayer.removeAll();
+  const highlight = new Graphic({
+    geometry: feature.geometry,
+    symbol: {
+      type: "simple-marker",
+      style: "circle",
+      color: [255, 193, 7, 1],
+      size: 16,
+      outline: { color: [11, 17, 19, 1], width: 2.5 },
+    } as __esri.SimpleMarkerSymbolProperties,
+  });
+  submittedSelectionLayer.add(highlight);
+
+  await view.goTo(feature.geometry, { duration: 800, easing: "ease-in-out" });
+}
+
+export function clearSubmittedSelection(): void {
+  submittedSelectionLayer.removeAll();
 }
 
 export function getView(): MapView {

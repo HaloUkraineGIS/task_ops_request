@@ -42,7 +42,10 @@ function formatCell(field: string, value: unknown): string {
   }
 }
 
-export async function refreshTable(container: HTMLElement): Promise<void> {
+export async function refreshTable(
+  container: HTMLElement,
+  onRowClick?: (row: SubmittedRequestRow) => void | Promise<void>
+): Promise<void> {
   container.innerHTML = `<div class="table-loading">Loading submitted requests…</div>`;
   let rows: SubmittedRequestRow[] = [];
   try {
@@ -68,6 +71,22 @@ export async function refreshTable(container: HTMLElement): Promise<void> {
   const tbody = document.createElement("tbody");
   for (const row of rows) {
     const tr = document.createElement("tr");
+    tr.classList.add("submitted-table__row");
+    tr.title = "Zoom to feature on map";
+    const objectId = row.OBJECTID ?? row.objectid ?? row["OBJECTID"] ?? row["objectid"];
+    if (objectId != null) {
+      tr.dataset.objectId = String(objectId);
+    }
+    if (onRowClick) {
+      tr.style.cursor = "pointer";
+      tr.addEventListener("click", () => {
+        for (const sibling of tr.parentElement?.querySelectorAll(".submitted-table__row") ?? []) {
+          sibling.classList.remove("submitted-table__row--selected");
+        }
+        tr.classList.add("submitted-table__row--selected");
+        void onRowClick(row);
+      });
+    }
     for (const col of tableColumns) {
       const td = document.createElement("td");
       td.textContent = formatCell(col.field, row[col.field]);

@@ -16,7 +16,7 @@ import "./styles/main.css";
 import { ensureSignedIn, signOut } from "./modules/auth";
 import { loadRefsCache } from "./modules/refs";
 import { loadZones } from "./modules/zones";
-import { initMap } from "./modules/map";
+import { initMap, zoomToSubmittedFeature } from "./modules/map";
 import { initPanel, getRows, getSelectedUnit, type DraftRow } from "./modules/panel";
 import { initModal, openModal } from "./modules/modal";
 import { refreshTable } from "./modules/table";
@@ -57,7 +57,11 @@ async function boot() {
     wireUi();
 
     setBootStatus("Loading submitted requests…");
-    await refreshTable(document.getElementById("bottom-panel-body")!);
+    await refreshTable(document.getElementById("bottom-panel-body")!, async (row) => {
+      const objectId = row.OBJECTID ?? row.objectid ?? row["OBJECTID"] ?? row["objectid"];
+      if (objectId == null) return;
+      await zoomToSubmittedFeature(String(objectId));
+    });
 
     bootOverlay.style.display = "none";
     appShell.classList.remove("app-shell--booting");
@@ -71,6 +75,16 @@ async function boot() {
 
 function wireUi() {
   const submitBtn = document.getElementById("submit-btn") as HTMLElement;
+  const bottomPanelBody = document.getElementById("bottom-panel-body") as HTMLElement;
+  const refreshButton = document.getElementById("bottom-panel-refresh") as HTMLElement;
+
+  const reloadSubmittedTable = () => {
+    void refreshTable(bottomPanelBody, async (row) => {
+      const objectId = row.OBJECTID ?? row.objectid ?? row["OBJECTID"] ?? row["objectid"];
+      if (objectId == null) return;
+      await zoomToSubmittedFeature(String(objectId));
+    });
+  };
 
   initPanel(
     {
@@ -105,11 +119,11 @@ function wireUi() {
       resultArea: document.getElementById("confirm-result")!,
     },
     {
-      onSubmitted: () => {
-        refreshTable(document.getElementById("bottom-panel-body")!);
-      },
+      onSubmitted: reloadSubmittedTable,
     }
   );
+
+  refreshButton.addEventListener("click", reloadSubmittedTable);
 
   submitBtn.addEventListener("click", () => {
     const rows = getRows();
