@@ -28,7 +28,7 @@ function formatFlag(value: unknown): string {
 
 function formatCell(field: string, value: unknown): string {
   switch (field) {
-    case "created_date":
+    case "submitted_at":
       return formatDateTime(value);
     case "date_to":
       return formatDateOnly(value);

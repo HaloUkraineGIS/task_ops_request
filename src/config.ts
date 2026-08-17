@@ -100,8 +100,8 @@ export const serverManagedFields = [
 // Columns rendered in the bottom "Submitted requests" table, in exact
 // required order, with display labels.
 export const tableColumns: Array<{ field: string; label: string }> = [
-  { field: "created_date", label: "Created" },
-  { field: "created_user", label: "Created by" },
+  { field: "submitted_at", label: "Submitted" },
+  { field: "submitter_name", label: "Submitted by" },
   { field: "unit", label: "Unit (region)" },
   { field: "task_code", label: "Task code" },
   { field: "task_name", label: "Name" },

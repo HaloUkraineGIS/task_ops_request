@@ -2,6 +2,7 @@ import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import Graphic from "@arcgis/core/Graphic";
 import esriRequest from "@arcgis/core/request";
 import { config, serverManagedFields } from "../config";
+import { ensureSignedIn } from "./auth";
 import type { DraftRow } from "./panel";
 
 // --- CONFIRMED server-side issue: created_user/created_date "stuck" -------
@@ -91,7 +92,10 @@ function flagValue(checked: boolean): string | null {
 export async function buildGraphics(
   rows: DraftRow[],
   unitName: string,
-  requestGrId: string
+  requestGrId: string,
+  submitterUser: string,
+  submitterName: string,
+  submittedAt: number
 ): Promise<Graphic[]> {
   const completeRows = rows.filter(
     (row): row is DraftRow & { refsRecord: NonNullable<DraftRow["refsRecord"]> } =>
@@ -120,6 +124,9 @@ export async function buildGraphics(
       resurvey: flagValue(row.flags.resurvey),
       security_check: flagValue(row.flags.security_check),
       date_to: row.dateTo ? row.dateTo.getTime() : null,
+      submitter_user: submitterUser,
+      submitter_name: submitterName,
+      submitted_at: submittedAt,
     };
 
     // Belt-and-braces: never send server-managed Editor Tracking fields.
@@ -155,8 +162,17 @@ export async function submitBatch(
   const completeRows = rows.filter((row) => row.refsRecord != null);
 
   const l = await getWrfsLayer();
+  const currentUser = await ensureSignedIn();
   const requestGrId = await buildRequestGrId();
-  const graphics = await buildGraphics(completeRows, unitName, requestGrId);
+  const submittedAt = Date.now();
+  const graphics = await buildGraphics(
+    completeRows,
+    unitName,
+    requestGrId,
+    currentUser.username,
+    currentUser.fullName,
+    submittedAt
+  );
 
   const result = await l.applyEdits({ addFeatures: graphics });
 
