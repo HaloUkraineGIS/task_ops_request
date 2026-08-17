@@ -54,3 +54,20 @@ export function getRefsRecord(taskCode: string): RefsRecord | undefined {
 export function getAllTaskCodes(): string[] {
   return cache ? Array.from(cache.keys()) : [];
 }
+
+export function getAllTaskOptions(): Array<{
+  taskCode: string;
+  taskName: string;
+  label: string;
+}> {
+  if (!cache) return [];
+
+  return Array.from(cache.values())
+    .filter((row) => !!row.task_code && !!row.task_name)
+    .map((row) => ({
+      taskCode: row.task_code,
+      taskName: row.task_name,
+      label: `${row.task_code} (${row.task_name})`,
+    }))
+    .sort((a, b) => a.taskCode.localeCompare(b.taskCode));
+}

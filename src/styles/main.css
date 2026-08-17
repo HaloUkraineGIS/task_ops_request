@@ -291,6 +291,22 @@ body {
   font-weight: 600;
   border-bottom: 1px solid var(--border);
 }
+.table-filter-wrap {
+  padding: 12px 0 8px;
+}
+.table-filter {
+  width: 100%;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font: inherit;
+}
+.table-filter:focus {
+  outline: 2px solid rgba(63, 182, 199, 0.55);
+  outline-offset: 1px;
+}
 .submitted-table td {
   padding: 8px;
   border-bottom: 1px solid var(--border);

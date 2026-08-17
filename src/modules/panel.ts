@@ -1,7 +1,7 @@
 import { flagFields, flagLabels, type FlagField } from "../config";
 import type { RefsRecord } from "../config";
 import { getZones, getZoneByName, type Zone } from "./zones";
-import { getAllTaskCodes, getRefsRecord } from "./refs";
+import { getAllTaskCodes, getAllTaskOptions, getRefsRecord } from "./refs";
 import * as mapModule from "./map";
 
 export type DraftRow = {
@@ -43,12 +43,21 @@ function allComplete(): boolean {
   return rows.length > 0 && rows.every(isRowComplete);
 }
 
-function availableTaskCodesForCurrentZone(): string[] {
+function availableTaskOptionsForCurrentZone(): Array<{
+  taskCode: string;
+  taskName: string;
+  label: string;
+}> {
   if (!selectedUnit) return [];
+
   const zone = getZoneByName(selectedUnit);
-  if (!zone) return getAllTaskCodes();
-  const filtered = Array.from(zone.taskCodes);
-  return filtered.length > 0 ? filtered : getAllTaskCodes();
+  const taskCodes = zone ? Array.from(zone.taskCodes) : getAllTaskCodes();
+  const allowed = new Set(taskCodes);
+
+  const allOptions = getAllTaskOptions();
+  const filtered = allOptions.filter((option) => allowed.has(option.taskCode));
+
+  return filtered.length > 0 ? filtered : allOptions;
 }
 
 function codesUsedByOtherRows(excludeRowId: string): Set<string> {
@@ -151,12 +160,16 @@ function renderRows() {
   elements.rowList.innerHTML = "";
   elements.emptyHint.style.display = rows.length === 0 ? "block" : "none";
 
+  const taskOptions = availableTaskOptionsForCurrentZone();
   for (const row of rows) {
-    elements.rowList.appendChild(buildRowElement(row));
+    elements.rowList.appendChild(buildRowElement(row, taskOptions));
   }
 }
 
-function buildRowElement(row: DraftRow): HTMLElement {
+function buildRowElement(
+  row: DraftRow,
+  taskOptions: Array<{ taskCode: string; taskName: string; label: string }>
+): HTMLElement {
   const el = document.createElement("div");
   el.className = "task-row";
   el.dataset.rowId = row.id;
@@ -169,14 +182,15 @@ function buildRowElement(row: DraftRow): HTMLElement {
   combobox.setAttribute("selection-mode", "single");
   combobox.setAttribute("placeholder", "Task code…");
   combobox.setAttribute("overlay-positioning", "fixed");
+  combobox.setAttribute("filterable", "true");
 
   const used = codesUsedByOtherRows(row.id);
-  for (const code of availableTaskCodesForCurrentZone()) {
+  for (const option of taskOptions) {
     const item = document.createElement("calcite-combobox-item");
-    item.setAttribute("value", code);
-    item.setAttribute("text-label", code);
-    if (row.taskCode === code) item.setAttribute("selected", "true");
-    if (used.has(code) && row.taskCode !== code) {
+    item.setAttribute("value", option.taskCode);
+    item.setAttribute("text-label", option.label);
+    if (row.taskCode === option.taskCode) item.setAttribute("selected", "true");
+    if (used.has(option.taskCode) && row.taskCode !== option.taskCode) {
       item.setAttribute("disabled", "true");
     }
     combobox.appendChild(item);
@@ -196,7 +210,6 @@ function buildRowElement(row: DraftRow): HTMLElement {
     } else {
       mapModule.removeMarker(row.id);
     }
-    renderRows();
     emitChanged();
   });
 

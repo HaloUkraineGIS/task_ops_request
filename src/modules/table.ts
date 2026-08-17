@@ -42,33 +42,12 @@ function formatCell(field: string, value: unknown): string {
   }
 }
 
-export async function refreshTable(
-  container: HTMLElement,
+function buildTableRows(
+  rows: SubmittedRequestRow[],
   onRowClick?: (row: SubmittedRequestRow) => void | Promise<void>
-): Promise<void> {
-  container.innerHTML = `<div class="table-loading">Loading submitted requests…</div>`;
-  let rows: SubmittedRequestRow[] = [];
-  try {
-    rows = await queryRecentSubmissions();
-  } catch (err) {
-    container.innerHTML = `<div class="table-error">Failed to load submitted requests.</div>`;
-    return;
-  }
-
-  const table = document.createElement("table");
-  table.className = "submitted-table";
-
-  const thead = document.createElement("thead");
-  const headRow = document.createElement("tr");
-  for (const col of tableColumns) {
-    const th = document.createElement("th");
-    th.textContent = col.label;
-    headRow.appendChild(th);
-  }
-  thead.appendChild(headRow);
-  table.appendChild(thead);
-
+): HTMLTableSectionElement {
   const tbody = document.createElement("tbody");
+
   for (const row of rows) {
     const tr = document.createElement("tr");
     tr.classList.add("submitted-table__row");
@@ -97,12 +76,75 @@ export async function refreshTable(
     }
     tbody.appendChild(tr);
   }
-  table.appendChild(tbody);
 
-  container.innerHTML = "";
-  if (rows.length === 0) {
-    container.innerHTML = `<div class="table-empty">No submitted requests yet.</div>`;
-  } else {
-    container.appendChild(table);
+  return tbody;
+}
+
+export async function refreshTable(
+  container: HTMLElement,
+  onRowClick?: (row: SubmittedRequestRow) => void | Promise<void>
+): Promise<void> {
+  container.innerHTML = `<div class="table-loading">Loading submitted requests…</div>`;
+  let rows: SubmittedRequestRow[] = [];
+  try {
+    rows = await queryRecentSubmissions();
+  } catch (err) {
+    container.innerHTML = `<div class="table-error">Failed to load submitted requests.</div>`;
+    return;
   }
+
+  const filterWrap = document.createElement("div");
+  filterWrap.className = "table-filter-wrap";
+
+  const input = document.createElement("input");
+  input.type = "search";
+  input.className = "table-filter";
+  input.placeholder = "Filter by Submitted by / Unit / Task code / Name";
+  input.autocomplete = "off";
+
+  const renderFilteredTable = () => {
+    const term = input.value.trim().toLowerCase();
+    const filtered = !term
+      ? rows
+      : rows.filter((row) => {
+          const haystacks = [
+            row.submitter_name,
+            row.unit,
+            row.task_code,
+            row.task_name,
+          ].map((value) => String(value ?? "").toLowerCase());
+          return haystacks.some((value) => value.includes(term));
+        });
+
+    const table = document.createElement("table");
+    table.className = "submitted-table";
+
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    for (const col of tableColumns) {
+      const th = document.createElement("th");
+      th.textContent = col.label;
+      headRow.appendChild(th);
+    }
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+    table.appendChild(buildTableRows(filtered, onRowClick));
+
+    container.innerHTML = "";
+    container.appendChild(filterWrap);
+    container.appendChild(table);
+    if (filtered.length === 0) {
+      container.innerHTML = "";
+      container.appendChild(filterWrap);
+      container.insertAdjacentHTML(
+        "beforeend",
+        '<div class="table-empty">No matching submitted requests.</div>'
+      );
+    }
+  };
+
+  input.addEventListener("input", renderFilteredTable);
+  filterWrap.appendChild(input);
+
+  renderFilteredTable();
 }
