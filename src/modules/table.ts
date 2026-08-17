@@ -102,6 +102,22 @@ export async function refreshTable(
   input.placeholder = "Filter by Submitted by / Unit / Task code / Name";
   input.autocomplete = "off";
 
+  const table = document.createElement("table");
+  table.className = "submitted-table";
+
+  const thead = document.createElement("thead");
+  const headRow = document.createElement("tr");
+  for (const col of tableColumns) {
+    const th = document.createElement("th");
+    th.textContent = col.label;
+    headRow.appendChild(th);
+  }
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+
+  const tbody = document.createElement("tbody");
+  table.appendChild(tbody);
+
   const renderFilteredTable = () => {
     const term = input.value.trim().toLowerCase();
     const filtered = !term
@@ -116,35 +132,20 @@ export async function refreshTable(
           return haystacks.some((value) => value.includes(term));
         });
 
-    const table = document.createElement("table");
-    table.className = "submitted-table";
+    tbody.replaceChildren(...buildTableRows(filtered, onRowClick).children);
 
-    const thead = document.createElement("thead");
-    const headRow = document.createElement("tr");
-    for (const col of tableColumns) {
-      const th = document.createElement("th");
-      th.textContent = col.label;
-      headRow.appendChild(th);
-    }
-    thead.appendChild(headRow);
-    table.appendChild(thead);
-    table.appendChild(buildTableRows(filtered, onRowClick));
-
-    container.innerHTML = "";
-    container.appendChild(filterWrap);
-    container.appendChild(table);
     if (filtered.length === 0) {
-      container.innerHTML = "";
-      container.appendChild(filterWrap);
-      container.insertAdjacentHTML(
-        "beforeend",
-        '<div class="table-empty">No matching submitted requests.</div>'
-      );
+      container.classList.add("table-container--empty");
+    } else {
+      container.classList.remove("table-container--empty");
     }
   };
 
   input.addEventListener("input", renderFilteredTable);
   filterWrap.appendChild(input);
 
+  container.innerHTML = "";
+  container.appendChild(filterWrap);
+  container.appendChild(table);
   renderFilteredTable();
 }
