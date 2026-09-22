@@ -1,5 +1,5 @@
 import { flagFields, flagLabels } from "../config";
-import type { DraftRow } from "./panel";
+import { isUrgentDate, type DraftRow } from "./panel";
 import { submitBatch } from "./wrfs";
 import * as panel from "./panel";
 
@@ -28,6 +28,7 @@ export function openModal(rows: DraftRow[], unitName: string) {
   for (const row of rows) {
     const item = document.createElement("div");
     item.className = "confirm-row";
+    if (isUrgentDate(row.dateTo)) item.classList.add("confirm-row--urgent");
     const flags = flagFields
       .filter((f) => row.flags[f])
       .map((f) => flagLabels[f])

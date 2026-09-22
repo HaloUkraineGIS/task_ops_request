@@ -43,6 +43,19 @@ function allComplete(): boolean {
   return rows.length > 0 && rows.every(isRowComplete);
 }
 
+export function isUrgentDate(value: Date | null): boolean {
+  if (!value) return false;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const deadline = new Date(today);
+  deadline.setDate(deadline.getDate() + 4);
+
+  const selectedDate = new Date(value);
+  selectedDate.setHours(0, 0, 0, 0);
+  return selectedDate < deadline;
+}
+
 function availableTaskOptionsForCurrentZone(): Array<{
   taskCode: string;
   taskName: string;
@@ -174,6 +187,7 @@ function buildRowElement(
   const el = document.createElement("div");
   el.className = "task-row";
   el.dataset.rowId = row.id;
+  if (isUrgentDate(row.dateTo)) el.classList.add("task-row--urgent");
 
   // --- Column 1: task code combobox ---
   const codeCol = document.createElement("div");
@@ -223,14 +237,17 @@ function buildRowElement(
   // --- Column 2: four checkboxes ---
   const flagsCol = document.createElement("div");
   flagsCol.className = "task-row__flags";
+  const checkboxes = new Map<FlagField, any>();
   for (const flag of flagFields) {
     const label = document.createElement("label");
     label.className = "task-row__flag";
 
     const checkbox = document.createElement("calcite-checkbox") as any;
     if (row.flags[flag]) checkbox.setAttribute("checked", "true");
+    checkboxes.set(flag, checkbox);
     checkbox.addEventListener("calciteCheckboxChange", () => {
       row.flags[flag] = checkbox.checked;
+      updateFlagAvailability(row, checkboxes);
       emitChanged();
     });
 
@@ -238,11 +255,15 @@ function buildRowElement(
     label.appendChild(document.createTextNode(flagLabels[flag]));
     flagsCol.appendChild(label);
   }
+  updateFlagAvailability(row, checkboxes);
 
   // --- Column 3: date-to picker ---
   const dateCol = document.createElement("div");
   dateCol.className = "task-row__date";
   const datePicker = document.createElement("calcite-input-date-picker") as any;
+  const urgentHint = document.createElement("div");
+  urgentHint.className = "task-row__urgent-hint";
+  urgentHint.textContent = "Warning: this is an urgent request date.";
   datePicker.setAttribute("placeholder", "Date to…");
   if (row.dateTo) {
     datePicker.value = row.dateTo.toISOString().slice(0, 10);
@@ -250,9 +271,14 @@ function buildRowElement(
   datePicker.addEventListener("calciteInputDatePickerChange", () => {
     const value = datePicker.value as string;
     row.dateTo = value ? new Date(value) : null;
+    const urgent = isUrgentDate(row.dateTo);
+    el.classList.toggle("task-row--urgent", urgent);
+    urgentHint.hidden = !urgent;
     emitChanged();
   });
   dateCol.appendChild(datePicker);
+  urgentHint.hidden = !isUrgentDate(row.dateTo);
+  dateCol.appendChild(urgentHint);
 
   // --- Trash icon ---
   const trash = document.createElement("calcite-action") as any;
@@ -269,6 +295,25 @@ function buildRowElement(
   renderRowHint(el, row);
 
   return el;
+}
+
+function updateFlagAvailability(
+  row: DraftRow,
+  checkboxes: Map<FlagField, any>
+): void {
+  const openPlannedSelected = row.flags.open_planned;
+  const otherFlagSelected = flagFields
+    .filter((flag) => flag !== "open_planned")
+    .some((flag) => row.flags[flag]);
+
+  for (const flag of flagFields) {
+    const checkbox = checkboxes.get(flag);
+    if (!checkbox) continue;
+    const shouldDisable =
+      (flag === "open_planned" && otherFlagSelected) ||
+      (flag !== "open_planned" && openPlannedSelected);
+    checkbox.toggleAttribute("disabled", shouldDisable);
+  }
 }
 
 function renderRowHint(rowEl: HTMLElement, row: DraftRow) {

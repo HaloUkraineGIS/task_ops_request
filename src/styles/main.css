@@ -185,6 +185,11 @@ body {
   border-radius: 6px;
   padding: 10px;
 }
+.task-row--urgent {
+  background: rgba(209, 87, 79, 0.16);
+  border-color: var(--danger);
+  box-shadow: inset 3px 0 0 var(--danger);
+}
 .task-row__hint {
   font-family: "JetBrains Mono", monospace;
   font-size: 11px;
@@ -203,6 +208,13 @@ body {
   align-items: center;
   gap: 6px;
   white-space: nowrap;
+}
+.task-row__urgent-hint {
+  color: var(--danger);
+  font-size: 10px;
+  line-height: 1.2;
+  margin-top: 4px;
+  max-width: 150px;
 }
 /* ---------- Resizers ---------- */
 .resizer {
@@ -352,6 +364,12 @@ body {
   font-size: 12px;
   padding: 6px 0;
   border-bottom: 1px solid var(--border);
+}
+.confirm-row--urgent {
+  background: rgba(209, 87, 79, 0.16);
+  border: 1px solid var(--danger);
+  border-radius: 4px;
+  padding: 6px;
 }
 .confirm-row__code {
   font-family: "JetBrains Mono", monospace;
