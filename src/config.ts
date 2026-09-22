@@ -72,12 +72,13 @@ export const autoCopiedFields = [
   "longitude",
 ] as const;
 
-// The four "flag" checkboxes, in required display order.
+// The five "flag" checkboxes, in required display order.
 export const flagFields = [
   "taskbook",
   "casevac",
   "resurvey",
   "security_check",
+  "open_planned",
 ] as const;
 export type FlagField = (typeof flagFields)[number];
 
@@ -86,6 +87,7 @@ export const flagLabels: Record<FlagField, string> = {
   casevac: "CASEVAC",
   resurvey: "Resurvey",
   security_check: "Security check",
+  open_planned: "Open planned",
 };
 
 // Fields that must NEVER be sent in applyEdits — server-managed via
@@ -111,4 +113,5 @@ export const tableColumns: Array<{ field: string; label: string }> = [
   { field: "casevac", label: "CASEVAC" },
   { field: "resurvey", label: "Resurvey" },
   { field: "security_check", label: "Security check" },
+  { field: "open_planned", label: "Open planned" },
 ];

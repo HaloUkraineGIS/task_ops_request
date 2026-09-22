@@ -36,6 +36,7 @@ function formatCell(field: string, value: unknown): string {
     case "casevac":
     case "resurvey":
     case "security_check":
+    case "open_planned":
       return formatFlag(value);
     default:
       return value == null ? "—" : String(value);

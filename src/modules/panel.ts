@@ -141,6 +141,7 @@ function addRow() {
       casevac: false,
       resurvey: false,
       security_check: false,
+      open_planned: false,
     },
     dateTo: null,
   };

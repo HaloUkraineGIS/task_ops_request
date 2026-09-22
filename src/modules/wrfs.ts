@@ -123,6 +123,7 @@ export async function buildGraphics(
       casevac: flagValue(row.flags.casevac),
       resurvey: flagValue(row.flags.resurvey),
       security_check: flagValue(row.flags.security_check),
+      open_planned: flagValue(row.flags.open_planned),
       date_to: row.dateTo ? row.dateTo.getTime() : null,
       submitter_user: submitterUser,
       submitter_name: submitterName,
