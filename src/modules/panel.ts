@@ -225,7 +225,7 @@ function buildRowElement(
   flagsCol.className = "task-row__flags";
   for (const flag of flagFields) {
     const label = document.createElement("label");
-    label.className = `task-row__flag${flag === "casevac" ? " task-row__flag--casevac" : ""}`;
+    label.className = "task-row__flag";
 
     const checkbox = document.createElement("calcite-checkbox") as any;
     if (row.flags[flag]) checkbox.setAttribute("checked", "true");

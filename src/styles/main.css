@@ -204,11 +204,6 @@ body {
   gap: 6px;
   white-space: nowrap;
 }
-.task-row__flag--casevac {
-  color: var(--accent-amber);
-  font-weight: 600;
-}
-
 /* ---------- Resizers ---------- */
 .resizer {
   background: var(--border);
@@ -286,10 +281,31 @@ body {
   top: 0;
   background: var(--bg-panel);
   text-align: left;
-  padding: 8px;
+  padding: 0;
   color: var(--text-muted);
   font-weight: 600;
   border-bottom: 1px solid var(--border);
+}
+.submitted-table th[aria-sort="asc"] .submitted-table__sort-button::after {
+  content: " ▲";
+}
+.submitted-table th[aria-sort="desc"] .submitted-table__sort-button::after {
+  content: " ▼";
+}
+.submitted-table__sort-button {
+  width: 100%;
+  border: 0;
+  padding: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.submitted-table__sort-button:hover,
+.submitted-table__sort-button:focus-visible {
+  background: rgba(63, 182, 199, 0.12);
+  color: var(--text-primary);
 }
 .table-filter-wrap {
   padding: 12px 0 8px;
@@ -308,7 +324,7 @@ body {
   outline-offset: 1px;
 }
 .submitted-table td {
-  padding: 8px;
+  padding: 4px 8px;
   border-bottom: 1px solid var(--border);
   font-family: "JetBrains Mono", monospace;
 }
@@ -322,11 +338,6 @@ body {
   background: rgba(255, 193, 7, 0.12);
   box-shadow: inset 0 0 0 1px rgba(255, 193, 7, 0.7);
 }
-.submitted-table td.cell--casevac {
-  color: var(--accent-amber);
-  font-weight: 600;
-}
-
 /* ---------- Confirm modal ---------- */
 .confirm-list {
   display: flex;

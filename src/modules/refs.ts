@@ -15,7 +15,7 @@ export async function loadRefsCache(): Promise<Map<string, RefsRecord>> {
   await layer.load();
 
   const query = new Query({
-    where: "1=1",
+    where: "status_name IN ('Surveyed', 'Planned', 'Ongoing', 'Suspended')",
     outFields: [...refsOutFields],
     returnGeometry: false,
     num: 2000,

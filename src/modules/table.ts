@@ -43,6 +43,40 @@ function formatCell(field: string, value: unknown): string {
   }
 }
 
+function sortValue(field: string, value: unknown): string | number {
+  if (value == null || value === "") return "";
+  switch (field) {
+    case "submitted_at":
+    case "date_to":
+      return Number(value);
+    case "taskbook":
+    case "casevac":
+    case "resurvey":
+    case "security_check":
+    case "open_planned":
+      return formatFlag(value) === "Yes" ? 1 : 0;
+    default:
+      return String(value).toLocaleLowerCase();
+  }
+}
+
+function compareRows(
+  left: SubmittedRequestRow,
+  right: SubmittedRequestRow,
+  field: string,
+  direction: "asc" | "desc"
+): number {
+  const leftValue = sortValue(field, left[field]);
+  const rightValue = sortValue(field, right[field]);
+  const leftEmpty = leftValue === "";
+  const rightEmpty = rightValue === "";
+
+  if (leftEmpty !== rightEmpty) return leftEmpty ? 1 : -1;
+  if (leftValue < rightValue) return direction === "asc" ? -1 : 1;
+  if (leftValue > rightValue) return direction === "asc" ? 1 : -1;
+  return 0;
+}
+
 function buildTableRows(
   rows: SubmittedRequestRow[],
   onRowClick?: (row: SubmittedRequestRow) => void | Promise<void>
@@ -70,9 +104,6 @@ function buildTableRows(
     for (const col of tableColumns) {
       const td = document.createElement("td");
       td.textContent = formatCell(col.field, row[col.field]);
-      if (col.field === "casevac" && formatFlag(row[col.field]) === "Yes") {
-        td.classList.add("cell--casevac");
-      }
       tr.appendChild(td);
     }
     tbody.appendChild(tr);
@@ -106,11 +137,27 @@ export async function refreshTable(
   const table = document.createElement("table");
   table.className = "submitted-table";
 
+  let sortField: string | null = null;
+  let sortDirection: "asc" | "desc" = "asc";
+
   const thead = document.createElement("thead");
   const headRow = document.createElement("tr");
   for (const col of tableColumns) {
     const th = document.createElement("th");
-    th.textContent = col.label;
+    const sortButton = document.createElement("button");
+    sortButton.type = "button";
+    sortButton.className = "submitted-table__sort-button";
+    sortButton.textContent = col.label;
+    sortButton.addEventListener("click", () => {
+      if (sortField === col.field) {
+        sortDirection = sortDirection === "asc" ? "desc" : "asc";
+      } else {
+        sortField = col.field;
+        sortDirection = "asc";
+      }
+      renderFilteredTable();
+    });
+    th.appendChild(sortButton);
     headRow.appendChild(th);
   }
   thead.appendChild(headRow);
@@ -133,9 +180,28 @@ export async function refreshTable(
           return haystacks.some((value) => value.includes(term));
         });
 
-    tbody.replaceChildren(...buildTableRows(filtered, onRowClick).children);
+    const sorted = sortField
+      ? [...filtered].sort((left, right) =>
+          compareRows(left, right, sortField as string, sortDirection)
+        )
+      : filtered;
 
-    if (filtered.length === 0) {
+    for (const [index, col] of tableColumns.entries()) {
+      const th = headRow.children[index] as HTMLElement;
+      const button = th.querySelector("button");
+      if (!button) continue;
+      const isActive = sortField === col.field;
+      th.setAttribute("aria-sort", isActive ? sortDirection : "none");
+      button.setAttribute(
+        "aria-label",
+        `Sort by ${col.label}${isActive ? `, ${sortDirection === "asc" ? "ascending" : "descending"}` : ""}`
+      );
+      button.dataset.direction = isActive ? sortDirection : "";
+    }
+
+    tbody.replaceChildren(...buildTableRows(sorted, onRowClick).children);
+
+    if (sorted.length === 0) {
       container.classList.add("table-container--empty");
     } else {
       container.classList.remove("table-container--empty");
