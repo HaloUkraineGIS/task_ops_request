@@ -31,10 +31,10 @@ export const refsOutFields = [
   "task_type_name",
   "survey_date",
   "status_name",
-  "oblast",
-  "rayon",
-  "council",
-  "locality",
+  "oblast_ukr",
+  "rayon_ukr",
+  "council_ukr",
+  "locality_ukr",
   "area_surveyed_m2",
   "latitude",
   "longitude",
@@ -47,10 +47,10 @@ export type RefsRecord = {
   task_type_name: string;
   survey_date: number | null;
   status_name: string | null;
-  oblast: string | null;
-  rayon: string | null;
-  council: string | null;
-  locality: string | null;
+  oblast_ukr: string | null;
+  rayon_ukr: string | null;
+  council_ukr: string | null;
+  locality_ukr: string | null;
   area_surveyed_m2: number | null;
   latitude: number;
   longitude: number;
